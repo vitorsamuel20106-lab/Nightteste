@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # ==========================================================
-# --- 🛑 SISTEMA DE SEGURANÇA AVANÇADA (ANTI-DEBUG & INTEGRIDADE) ---
+# --- 🛑 SISTEMA DE SEGURANÇA (ANTI-DEBUG & INTEGRIDADE) ---
 ( ( [[ "$-" == *x* ]] || [ -n "$BASH_EXECUTION_STRING" ] ) && kill -9 $$ ) 2>/dev/null
 if [ -f "/proc/self/status" ] && grep -q "TracerPid.*[1-9]" /proc/self/status 2>/dev/null; then kill -9 $$; fi
 # ==========================================================
 
-# PAINEL ELITE - VERSÃO FINAL VIP
+# PAINEL - VERSÃO FINAL 
 
 # Cores
 RED='\e[1;31m'
@@ -142,7 +142,7 @@ while true; do
     clear
     echo -e "${RED}============================================================${RESET}"
     echo -e "${GOLD}                👑 Night ELITE - APOSTADO 👑${RESET}"
-    echo -e "${RED}  [!] Versão de teste - Pode ter conter erros(shizuku/root${RESET}"
+    echo -e "${RED}  [!] Versão de teste - Pode ter conter erros{RESET}"
     echo -e "${RED}============================================================${RESET}"
     echo -e " 📱 DISPOSITIVO: ${CYAN}MOTOROLA Edge 30 Fusion${RESET}"
     echo -e " 🤖 SISTEMA:     ${CYAN}Android 14 (Shizuku Ativo)${RESET}"
