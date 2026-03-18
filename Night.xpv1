@@ -88,7 +88,7 @@ carregar_animado() {
 
     # 1. Corrige o Limpeza Total (A14 não aceita "999G", precisa de bytes inteiros)
     if [[ "$cmd" == *"pm trim-caches"* ]]; then
-        real_cmd="pm trim-caches 99999999999999"
+        real_cmd="pm trim-caches 99999"
     fi
 
     # 2. Corrige o Thermal Service (A14 bloqueia override-status via Shizuku, aplica workaround)
