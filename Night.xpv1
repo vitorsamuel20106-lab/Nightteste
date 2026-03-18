@@ -141,8 +141,8 @@ carregar_animado() {
 while true; do
     clear
     echo -e "${RED}============================================================${RESET}"
-    echo -e "${GOLD}                👑 PAINEL ELITE - APOSTADO 👑${RESET}"
-    echo -e "${RED}  [!] Versão de teste - Pode haver bugs em algumas funções${RESET}"
+    echo -e "${GOLD}                👑 Night ELITE - APOSTADO 👑${RESET}"
+    echo -e "${RED}  [!] Versão de teste - Pode haver bugs em algumas opções${RESET}"
     echo -e "${RED}============================================================${RESET}"
     echo -e " 📱 DISPOSITIVO: ${CYAN}MOTOROLA Edge 30 Fusion${RESET}"
     echo -e " 🤖 SISTEMA:     ${CYAN}Android 14 (Shizuku Ativo)${RESET}"
