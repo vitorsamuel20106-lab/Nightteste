@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 # ==========================================================
@@ -21,7 +20,7 @@ RESET='\e[0m'
 # ==========================================================
 # --- 🧩 MOTOR DE AUTENTICAÇÃO ---
 MAX=3; ATT=1; _AUTH_OK=0
-# Nova Key Ofuscada: NIGHT-8831
+# KEY ATUALIZADA: NIGHT-8831
 _KEY_B64="TklHSFQtODgzMQ=="
 _KEY_REAL=$(echo "$_KEY_B64" | base64 -d)
 rm -rf "$PREFIX/tmp/.sys_sbr_auth" 2>/dev/null
@@ -170,8 +169,8 @@ while true; do
         # 7. 🧹 LIMPEZA
         carregar_animado "pm trim-caches 999999999" "LIMPANDO CACHE LIXO"
         
-        # 8. 🧠 SISTEMA (EM SEGUNDO PLANO PARA NÃO TRAVAR O SCRIPT)
-        carregar_animado "cmd package bg-dexopt-job </dev/null >/dev/null 2>&1 &" "OTIMIZANDO KERNEL/DEX (EM SEGUNDO PLANO)"
+        # 8. 🧠 SISTEMA (CORTADO DO TERMINAL PARA SEGUNDO PLANO ABSOLUTO)
+        carregar_animado "cmd package bg-dexopt-job </dev/null >/dev/null 2>&1 &" "OTIMIZANDO KERNEL/DEX"
         
         # 9. ⚙️ AJUSTES FINAIS
         carregar_animado "wm density reset" "DPI PADRÃO"
@@ -184,7 +183,7 @@ while true; do
         sleep 3 
         ;;    
 
-    77) carregar_animado "cmd package bg-dexopt-job </dev/null >/dev/null 2>&1 &" "OTIMIZANDO KERNEL/DEX (EM SEGUNDO PLANO)"; sleep 1 ;;  
+    77) carregar_animado "cmd package bg-dexopt-job </dev/null >/dev/null 2>&1 &" "OTIMIZANDO KERNEL/DEX"; sleep 1 ;;  
     01|1) carregar_animado "settings put secure accessibility_touch_slop 1 && settings put secure long_press_timeout 180" "SENSI EMULADOR (Toque Rápido)"; sleep 1 ;;  
     02|2) carregar_animado "am start -a android.intent.action.VIEW -d \"https://tiktok.com/@night_pushhard\" 2>/dev/null || monkey -p com.android.chrome -c android.intent.category.LAUNCHER 1" "ABRINDO CANAL DO CRIADOR"; sleep 1 ;;  
     03|3) carregar_animado "wm density reset" "DPI PADRÃO"; sleep 1 ;;  
@@ -207,3 +206,4 @@ while true; do
     read -t 0.1 -n 10000 discard  
     stty echo
 done
+
