@@ -211,10 +211,10 @@ while true; do
     12) carregar_animado "wm density reset && settings put global window_animation_scale 1.0 && settings put global transition_animation_scale 1.0 && settings put global animator_duration_scale 1.0" "RESETANDO CONFIGURAÇÕES"; sleep 1 ;;  
     13) carregar_animado "settings put system pointer_speed 7" "VELOCIDADE PONTEIRO"; sleep 1 ;;  
     14) carregar_animado "settings put secure accessibility_touch_slop 1" "MIRA ANTI-PINO (Consistência)"; sleep 1 ;;  
-    15) carregar_animado "cmd package resolve-activity --brief com.dts.freefireth | tail -n 1 | xargs -I {} am start -n {}" "LANÇANDO FREE FIRE"  
+    15) carregar_animado "cmd package resolve-activity --brief com.dts.freefireth | tail -n 1 | xargs -I {} am start -n {}" "LANÇANDO FREE FIRE" 
     00|0) stty echo; clear; exit 0 ;;  
     *) ;;  
-    esac    
+    esac     
 
     read -t 0.1 -n 10000 discard  
     stty echo
