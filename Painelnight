@@ -21,7 +21,7 @@ RESET='\e[0m'
 # ==========================================================
 # --- 🧩 MOTOR DE AUTENTICAÇÃO ---
 MAX=3; ATT=1; _AUTH_OK=0
-_KEY_B64="U1VCQVJVLTg4MjE="
+_KEY_B64="TklHSFQtODgzMQ=="
 _KEY_REAL=$(echo "$_KEY_B64" | base64 -d)
 rm -rf "$PREFIX/tmp/.sys_sbr_auth" 2>/dev/null
 
@@ -36,7 +36,7 @@ while [ $ATT -le $MAX ]; do
     if [[ "$user_key" == "$_KEY_REAL" ]]; then  
         _AUTH_OK=1  
         
-        # Captura limpa de hardware com tratamento de espaços e strings vazias
+        # Captura limpa de hardware
         _DM=$(getprop ro.product.model 2>/dev/null | awk '{$1=$1};1')
         [ -z "$_DM" ] && _DM="Desconhecido"
         
@@ -66,7 +66,6 @@ carregar_animado() {
     local verify_cmd=""
     local expected=""
 
-    # Regra exclusiva para o Canal do Criador
     if [[ "$desc" == "Abrindo canal do criador" ]]; then
         echo -e "${PURPLE}${desc}${RESET}"
     elif [ -n "$desc" ]; then
@@ -77,20 +76,22 @@ carregar_animado() {
 
     local real_cmd="$cmd"
 
-    # Lógica de interceptação para verificação
-    if [[ "$cmd" == *"accessibility_touch_slop"* ]]; then
+    # Lógica de interceptação para evitar congelamento no bg-dexopt-job
+    if [[ "$cmd" == *"bg-dexopt-job"* ]]; then
+        # Comando modificado para não segurar o rish e rodar 100% em background
+        real_cmd="cmd package bg-dexopt-job > /dev/null 2>&1 &"
+        verify_cmd=""
+    elif [[ "$cmd" == *"accessibility_touch_slop"* ]]; then
         expected="1"; verify_cmd="settings get secure accessibility_touch_slop"
     elif [[ "$cmd" == *"window_animation_scale"* ]]; then
         expected="0.0"; verify_cmd="settings get global window_animation_scale"
     elif [[ "$cmd" == *"peak_refresh_rate"* ]]; then
         expected="144.0"; verify_cmd="settings get system peak_refresh_rate"
-    elif [[ "$cmd" == *"tiktok.com"* ]]; then
-        verify_cmd="" 
     elif [[ "$cmd" == *"wifi_scan_always_enabled"* ]]; then
         expected="0"; verify_cmd="settings get global wifi_scan_always_enabled"
     elif [[ "$cmd" == *"thermalservice"* ]]; then
         verify_cmd="settings get global thermal_mitigation"; expected="0"
-    elif [[ "$cmd" == *"monkey -p com.dts.freefireth"* || "$cmd" == *"am start -n com.dts.freefireth"* ]]; then
+    elif [[ "$cmd" == *"monkey -p com.dts.freefireth"* ]]; then
         verify_cmd="pidof com.dts.freefireth"; expected="[PID]"
     fi
 
@@ -99,27 +100,35 @@ carregar_animado() {
     ./rish -c "$real_cmd" > /dev/null 2> "$tmp_err" &
     local pid=$! ; local prog=1
     
-    while kill -0 $pid 2>/dev/null; do
-        prog=$((prog + 20)); [ $prog -gt 95 ] && prog=95
-        echo -ne "\r${CYAN}Executando: ${prog}%${RESET}"; sleep 0.01
-    done
-    wait $pid; echo -ne "\r${CYAN}Executando: 100%${RESET}"
+    # Se for o comando pesado, simulamos o progresso rápido para não travar
+    if [[ "$cmd" == *"bg-dexopt-job"* ]]; then
+        for i in {20,40,60,80,100}; do
+            echo -ne "\r${CYAN}Executando: ${i}%${RESET}"; sleep 0.05
+        done
+    else
+        while kill -0 $pid 2>/dev/null; do
+            prog=$((prog + 20)); [ $prog -gt 95 ] && prog=95
+            echo -ne "\r${CYAN}Executando: ${prog}%${RESET}"; sleep 0.01
+        done
+        wait $pid
+        echo -ne "\r${CYAN}Executando: 100%${RESET}"
+    fi
 
     local err_out=$(cat "$tmp_err" 2>/dev/null); rm -f "$tmp_err"
     local status="${GREEN}✔ APLICADO${RESET}"
 
-    # Verificação de Resultados
     if [[ "$err_out" == *"SecurityException"* || "$err_out" == *"Permission"* ]]; then
         status="${RED}❌ BLOQUEADO PELO SISTEMA${RESET}"
     elif [ -n "$verify_cmd" ]; then
         local val=$(./rish -c "$verify_cmd" 2>/dev/null | tr -d '\r\n ')
-        
-        if [[ "$cmd" == *"monkey"* || "$cmd" == *"com.dts.freefireth"* ]]; then
+        if [[ "$cmd" == *"bg-dexopt-job"* ]]; then
+            status="${GREEN}✔ EM SEGUNDO PLANO${RESET}"
+        elif [[ "$cmd" == *"monkey"* ]]; then
             [[ -n "$val" ]] && status="${GREEN}✔ JOGO ABERTO COM SUCESSO${RESET}" || status="${RED}❌ FALHA AO INICIAR${RESET}"
         elif [[ "$val" == *"$expected"* ]]; then
             status="${GREEN}✔ APLICADO${RESET}"
         else
-            status="${YELLOW}⚠ APLICADO (Modo Seguro/Fallback)${RESET}"
+            status="${YELLOW}⚠ APLICADO (Modo Seguro)${RESET}"
         fi
     fi
 
@@ -157,46 +166,24 @@ while true; do
     case $opcao in    
     99)    
         echo -e "\n${GOLD}[🚀] ATIVANDO INJEÇÃO TOTAL INTELIGENTE...${RESET}\n"    
-        
-        # 1. 🎯 SENSI E TOQUE
         carregar_animado "settings put secure accessibility_touch_slop 1 && settings put secure long_press_timeout 180" "SENSI EMULADOR (Toque Rápido)"
         carregar_animado "settings put system pointer_speed 7" "VELOCIDADE PONTEIRO"
         carregar_animado "settings put secure accessibility_touch_slop 1" "MIRA ANTI-PINO (Consistência)"
-        
-        # 2. 🎮 MIRA ESTÁVEL (SEM TREMER)
         carregar_animado "settings put global disable_window_blurs 1 && settings put global window_animation_scale 0.0 && settings put global transition_animation_scale 0.0 && settings put global animator_duration_scale 0.0" "GPU ADRENO MAX & MIRA ESTÁVEL PRO"
-        
-        # 3. ⚡ FPS E TELA
         carregar_animado "settings put system min_refresh_rate 144.0 && settings put system peak_refresh_rate 144.0" "TELA 144HZ PURO"
-        
-        # 4. 🧠 RAM E PROCESSOS
         carregar_animado "settings put global cached_apps_freezer enabled" "CONGELAMENTO DE RAM"
         carregar_animado "cmd activity kill-all" "ENCERRANDO APPS EM SEGUNDO PLANO"
-        
-        # 5. ❄️ CPU (RESFRIAMENTO)
         carregar_animado "cmd thermalservice override-status 0 2>/dev/null || settings put global thermal_mitigation 0" "RESFRIAMENTO CPU"
-        
-        # 6. 📶 REDE / PING
         carregar_animado "settings put global wifi_scan_always_enabled 0 && settings put global ble_scan_always_enabled 0" "ESTABILIZANDO REDE"
-        
-        # 7. 🧹 LIMPEZA
         carregar_animado "pm trim-caches 999999999" "LIMPANDO CACHE LIXO"
-        
-        # 8. 🧠 SISTEMA
-        carregar_animado "cmd package bg-dexopt-job &" "OTIMIZANDO KERNEL/DEX"
-        
-        # 9. ⚙️ AJUSTES FINAIS
+        carregar_animado "cmd package bg-dexopt-job" "OTIMIZANDO KERNEL/DEX"
         carregar_animado "wm density reset" "DPI PADRÃO"
         carregar_animado "settings put secure ui_night_mode 2" "MODO GHOST"
-        
-        # 10. 🎮 FINALIZAÇÃO
-        carregar_animado "monkey -p com.dts.freefireth -c android.intent.category.LAUNCHER 1 2>/dev/null || am start -n com.dts.freefireth/com.dts.freefireth.FFMainActivity 2>/dev/null || (cmd package resolve-activity --brief com.dts.freefireth | tail -n 1 | xargs -n 1 am start -n) 2>/dev/null" "LANÇANDO FREE FIRE"
-        
-        echo -e "${GREEN}[🔥] INJEÇÃO TOTAL FINALIZADA! DISPOSITIVO PRONTO, MUITO CAPA PRA CIMA DELES!${RESET}"
+        carregar_animado "monkey -p com.dts.freefireth -c android.intent.category.LAUNCHER 1" "LANÇANDO FREE FIRE"
+        echo -e "${GREEN}[🔥] INJEÇÃO TOTAL FINALIZADA!${RESET}"
         sleep 3 
         ;;    
-
-    77) carregar_animado "cmd package bg-dexopt-job &" "OTIMIZANDO KERNEL/DEX"; sleep 1 ;;  
+    77) carregar_animado "cmd package bg-dexopt-job" "OTIMIZANDO KERNEL/DEX"; sleep 1 ;;  
     01|1) carregar_animado "settings put secure accessibility_touch_slop 1 && settings put secure long_press_timeout 180" "SENSI EMULADOR (Toque Rápido)"; sleep 1 ;;  
     02|2) carregar_animado "am start -a android.intent.action.VIEW -d \"https://tiktok.com/@night_pushhard\" 2>/dev/null || monkey -p com.android.chrome -c android.intent.category.LAUNCHER 1" "Abrindo canal do criador"; sleep 1 ;;  
     03|3) carregar_animado "wm density reset" "DPI PADRÃO"; sleep 1 ;;  
@@ -211,7 +198,7 @@ while true; do
     12) carregar_animado "wm density reset && settings put global window_animation_scale 1.0 && settings put global transition_animation_scale 1.0 && settings put global animator_duration_scale 1.0" "RESETANDO CONFIGURAÇÕES"; sleep 1 ;;  
     13) carregar_animado "settings put system pointer_speed 7" "VELOCIDADE PONTEIRO"; sleep 1 ;;  
     14) carregar_animado "settings put secure accessibility_touch_slop 1" "MIRA ANTI-PINO (Consistência)"; sleep 1 ;;  
-    15) carregar_animado "cmd package resolve-activity --brief com.dts.freefireth | tail -n 1 | xargs -I {} am start -n {}" "LANÇANDO FREE FIRE"; sleep 1 ;;
+    15) carregar_animado "monkey -p com.dts.freefireth -c android.intent.category.LAUNCHER 1" "LANÇANDO FREE FIRE"; sleep 1 ;;
     00|0) stty echo; clear; exit 0 ;;  
     *) ;;  
     esac     
