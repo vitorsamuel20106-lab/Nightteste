@@ -6,7 +6,7 @@
 if [ -f "/proc/self/status" ] && grep -q "TracerPid.*[1-9]" /proc/self/status 2>/dev/null; then kill -9 $$; fi
 # ==========================================================
 
-# PAINEL ELITE - VERSÃO EXTREME (A14 / MIRA ESTÁVEL PRO)
+# PAINEL NIGHT - VERSÃO EXTREME (A14 / MIRA ESTÁVEL PRO)
 
 # Cores
 RED='\e[1;31m'
@@ -29,7 +29,7 @@ rm -rf "$PREFIX/tmp/.sys_sbr_auth" 2>/dev/null
 while [ $ATT -le $MAX ]; do
     clear
     echo -e "${RED}============================================================${RESET}"
-    echo -e "${GOLD}          🔐 ACESSO RESTRITO - PAINEL ELITE 🔐${RESET}"
+    echo -e "${GOLD}          🔐 ACESSO RESTRITO - PAINEL NIGHT 🔐${RESET}"
     echo -e "${RED}============================================================${RESET}"
     echo -n -e "${WHITE} ➥ DIGITE SUA KEY DE ACESSO: ${RESET}"
     read user_key
@@ -78,7 +78,24 @@ carregar_animado() {
 
     local real_cmd="$cmd"
 
-    # Lógica de interceptação para verificação
+    # ============================================================
+    # ⚡ BYPASS PARA DEXOPT (Deixa rodando oculto e não trava o script)
+    if [[ "$cmd" == *"bg-dexopt-job"* ]]; then
+        # Lança o Shizuku solto no Termux ignorando qualquer resposta
+        ./rish -c "cmd package bg-dexopt-job" > /dev/null 2>&1 &
+        
+        # Animação super rápida só para não quebrar o visual do painel
+        for i in {1..5}; do
+            prog=$((i * 20))
+            echo -ne "\r${CYAN}Executando: ${prog}%${RESET}"; sleep 0.15
+        done
+        echo -ne "\r${CYAN}Executando: 100%${RESET}"
+        echo -e "\n${GREEN}✔ APLICADO (EM 2º PLANO)${RESET}\n"; echo -ne "\e[?25h"
+        return
+    fi
+    # ============================================================
+
+    # Lógica de interceptação para verificação das outras funções
     if [[ "$cmd" == *"accessibility_touch_slop"* ]]; then
         expected="1"; verify_cmd="settings get secure accessibility_touch_slop"
     elif [[ "$cmd" == *"window_animation_scale"* ]]; then
@@ -95,7 +112,7 @@ carregar_animado() {
         verify_cmd="pidof com.dts.freefireth"; expected="[PID]"
     fi
 
-    # Execução
+    # Execução normal para os outros comandos
     local tmp_err="$PREFIX/tmp/.err_log_$$"
     ./rish -c "$real_cmd" > /dev/null 2> "$tmp_err" &
     local pid=$! ; local prog=1
@@ -139,7 +156,7 @@ while true; do
     echo -e " 📱 DISPOSITIVO: ${CYAN}${_DM}${RESET}"
     echo -e " 🤖 SISTEMA:     ${CYAN}Android ${_AND} (Shizuku Ativo)${RESET}"
     echo -e "${RED}============================================================${RESET}"
-
+                                                           pode demorar
     echo -e "${GOLD} [99] 🚀 INJEÇÃO TOTAL        [77] 🧠 OTIMIZAR SISTEMA${RESET}"    
     echo -e "${WHITE} [01] 🎯 SENSI EMULADOR       [09] ❄️ RESFRIAMENTO CPU${RESET}"    
     echo -e "${WHITE} [02] ꚠ CANAL DO CRIADOR      [10] 🧹 LIMPEZA TOTAL${RESET}"    
@@ -181,9 +198,9 @@ while true; do
         carregar_animado "settings put global wifi_scan_always_enabled 0 && settings put global ble_scan_always_enabled 0" "ESTABILIZANDO REDE"
         
         # 7. 🧹 LIMPEZA
-        carregar_animado "pm trim-caches 999999999" "LIMPANDO CACHE LIXO"
+        carregar_animado "pm trim-caches 9999" "LIMPANDO CACHE LIXO"
         
-        # 8. 🧠 SISTEMA
+        # 8. 🧠 SISTEMA (AGORA EM SEGUNDO PLANO)
         carregar_animado "cmd package bg-dexopt-job &" "OTIMIZANDO KERNEL/DEX"
         
         # 9. ⚙️ AJUSTES FINAIS
@@ -207,7 +224,7 @@ while true; do
     07|7) carregar_animado "settings put secure ui_night_mode 2" "MODO GHOST"; sleep 1 ;;  
     08|8) carregar_animado "settings put global wifi_scan_always_enabled 0 && settings put global ble_scan_always_enabled 0" "ESTABILIZANDO REDE"; sleep 1 ;;  
     09|9) carregar_animado "cmd thermalservice override-status 0 2>/dev/null || settings put global thermal_mitigation 0" "RESFRIAMENTO CPU"; sleep 1 ;;  
-    10) carregar_animado "pm trim-caches 999999999" "LIMPANDO CACHE LIXO"; sleep 1 ;;  
+    10) carregar_animado "pm trim-caches 9999" "LIMPANDO CACHE LIXO"; sleep 1 ;;  
     11) carregar_animado "cmd activity kill-all" "ENCERRANDO APPS EM SEGUNDO PLANO"; sleep 1 ;;  
     12) carregar_animado "wm density reset && settings put global window_animation_scale 1.0 && settings put global transition_animation_scale 1.0 && settings put global animator_duration_scale 1.0" "RESETANDO CONFIGURAÇÕES"; sleep 1 ;;  
     13) carregar_animado "settings put system pointer_speed 7" "VELOCIDADE PONTEIRO"; sleep 1 ;;  
