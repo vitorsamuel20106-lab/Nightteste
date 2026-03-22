@@ -156,7 +156,7 @@ while true; do
     echo -e " 📱 DISPOSITIVO: ${CYAN}${_DM}${RESET}"
     echo -e " 🤖 SISTEMA:     ${CYAN}Android ${_AND} (Shizuku Ativo)${RESET}"
     echo -e "${RED}============================================================${RESET}"
-                                                           pode demorar
+
     echo -e "${GOLD} [99] 🚀 INJEÇÃO TOTAL        [77] 🧠 OTIMIZAR SISTEMA${RESET}"    
     echo -e "${WHITE} [01] 🎯 SENSI EMULADOR       [09] ❄️ RESFRIAMENTO CPU${RESET}"    
     echo -e "${WHITE} [02] ꚠ CANAL DO CRIADOR      [10] 🧹 LIMPEZA TOTAL${RESET}"    
