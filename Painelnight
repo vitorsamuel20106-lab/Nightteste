@@ -79,13 +79,9 @@ carregar_animado() {
     local real_cmd="$cmd"
 
     # ============================================================
-    # ⚡ BYPASS PARA COMANDOS EM 2º PLANO (Não trava o script)
-    # Pega a otimização DEX e o novo Loop de Limpeza de Cache
+    # ⚡ BYPASS PARA COMANDOS EM 2º PLANO
     if [[ "$cmd" == *"bg-dexopt-job"* ]] || [[ "$cmd" == *"while true"* && "$cmd" == *"trim-caches"* ]]; then
-        # Lança o Shizuku solto no Termux ignorando qualquer resposta
         ./rish -c "$cmd" > /dev/null 2>&1 &
-        
-        # Animação super rápida só para não quebrar o visual do painel
         for i in {1..5}; do
             prog=$((i * 20))
             echo -ne "\r${CYAN}Executando: ${prog}%${RESET}"; sleep 0.15
@@ -96,9 +92,9 @@ carregar_animado() {
     fi
     # ============================================================
 
-    # Lógica de interceptação para verificação das outras funções
+    # Lógica de interceptação para verificação
     if [[ "$cmd" == *"accessibility_touch_slop"* ]]; then
-        expected="1"; verify_cmd="settings get secure accessibility_touch_slop"
+        expected="2"; verify_cmd="settings get secure accessibility_touch_slop"
     elif [[ "$cmd" == *"window_animation_scale"* ]]; then
         expected="0.0"; verify_cmd="settings get global window_animation_scale"
     elif [[ "$cmd" == *"peak_refresh_rate"* ]]; then
@@ -109,11 +105,13 @@ carregar_animado() {
         expected="0"; verify_cmd="settings get global wifi_scan_always_enabled"
     elif [[ "$cmd" == *"cpu_power_save_mode"* ]]; then
         verify_cmd="settings get global cpu_power_save_mode"; expected="0"
-    elif [[ "$cmd" == *"monkey -p com.dts.freefireth"* || "$cmd" == *"am start -n com.dts.freefireth"* ]]; then
+    elif [[ "$cmd" == *"freefireth"* ]]; then
         verify_cmd="pidof com.dts.freefireth"; expected="[PID]"
+    elif [[ "$cmd" == *"freefiremax"* ]]; then
+        verify_cmd="pidof com.dts.freefiremax"; expected="[PID]"
     fi
 
-    # Execução normal para os outros comandos
+    # Execução normal
     local tmp_err="$PREFIX/tmp/.err_log_$$"
     ./rish -c "$real_cmd" > /dev/null 2> "$tmp_err" &
     local pid=$! ; local prog=1
@@ -133,7 +131,7 @@ carregar_animado() {
     elif [ -n "$verify_cmd" ]; then
         local val=$(./rish -c "$verify_cmd" 2>/dev/null | tr -d '\r\n ')
         
-        if [[ "$cmd" == *"monkey"* || "$cmd" == *"com.dts.freefireth"* ]]; then
+        if [[ "$cmd" == *"freefire"* ]]; then
             [[ -n "$val" ]] && status="${GREEN}✔ JOGO ABERTO COM SUCESSO${RESET}" || status="${RED}❌ FALHA AO INICIAR${RESET}"
         elif [[ "$val" == *"$expected"* ]]; then
             status="${GREEN}✔ APLICADO${RESET}"
@@ -143,6 +141,43 @@ carregar_animado() {
     fi
 
     echo -e "\n${status}\n"; echo -ne "\e[?25h"
+}
+
+# ==========================================================
+# --- 🎮 FUNÇÃO DE ESCOLHA DO JOGO (FIXED) ---
+abrir_jogo() {
+    local erro_msg=""
+    while true; do
+        clear
+        echo -e "${CYAN}============================================================${RESET}"
+        echo -e "${GOLD}           🎮 SELECIONE A VERSÃO DO FREE FIRE 🎮${RESET}"
+        echo -e "${CYAN}============================================================${RESET}"
+        echo -e "${WHITE} [1] FREE FIRE NORMAL"
+        echo -e "${WHITE} [2] FREE FIRE MAX"
+        echo -e "${CYAN}------------------------------------------------------------${RESET}"
+        
+        # Exibe erro apenas se houver um input inválido anterior
+        if [ -n "$erro_msg" ]; then
+            echo -e "$erro_msg"
+            erro_msg=""
+        fi
+
+        echo -n -e "${GOLD} ➥ DIGITE A OPÇÃO: ${RESET}"
+        
+        stty echo 
+        read escolha_ff
+        stty -echo 
+
+        if [ "$escolha_ff" == "1" ]; then
+            carregar_animado "monkey -p com.dts.freefireth -c android.intent.category.LAUNCHER 1 2>/dev/null || am start -n com.dts.freefireth/com.dts.freefireth.FFMainActivity 2>/dev/null" "LANÇANDO FREE FIRE NORMAL"
+            break
+        elif [ "$escolha_ff" == "2" ]; then
+            carregar_animado "monkey -p com.dts.freefiremax -c android.intent.category.LAUNCHER 1 2>/dev/null || am start -n com.dts.freefiremax/com.dts.freefiremax.FFMainActivity 2>/dev/null" "LANÇANDO FREE FIRE MAX"
+            break
+        else
+            erro_msg="${RED}[❌] OPÇÃO INVÁLIDA! DIGITE APENAS 1 OU 2.${RESET}"
+        fi
+    done
 }
 
 # ==========================================================
@@ -176,46 +211,25 @@ while true; do
     case $opcao in    
     99)    
         echo -e "\n${GOLD}[🚀] ATIVANDO INJEÇÃO TOTAL INTELIGENTE...${RESET}\n"    
-        
-        # 1. 🎯 SENSI E TOQUE
-        carregar_animado "settings put secure accessibility_touch_slop 1 && settings put secure long_press_timeout 180 && settings put secure multi_press_timeout 200" "SENSI EMULADOR (Toque Rápido)"
-        carregar_animado "settings put system pointer_speed 7" "VELOCIDADE PONTEIRO"
-        carregar_animado "settings put secure accessibility_touch_slop 1" "MIRA ANTI-PINO (Consistência)"
-        
-        # 2. 🎮 MIRA ESTÁVEL & ZERO DELAY VISUAL
+        carregar_animado "settings put secure accessibility_touch_slop 2 && settings put secure long_press_timeout 200 && settings put secure multi_press_timeout 200" "SENSI EMULADOR (Estável)"
+        carregar_animado "settings put system pointer_speed 6" "VELOCIDADE PONTEIRO"
+        carregar_animado "settings put secure accessibility_touch_slop 2" "MIRA ANTI-PINO (Consistência)"
         carregar_animado "settings put global window_animation_scale 0.0 && settings put global transition_animation_scale 0.0 && settings put global animator_duration_scale 0.0 && settings put global disable_window_blurs 1" "ZERO DELAY VISUAL (Animações 0.0)"
-        
-        # 3. ⚡ FPS E TELA
         carregar_animado "settings put system min_refresh_rate 120.0 && settings put system peak_refresh_rate 144.0 && settings put global disable_window_blurs 1 && settings put global render_thread 1" "PERFORMANCE TOTAL & 144HZ"
-        
-        # 4. 🧠 RAM E PROCESSOS
         carregar_animado "settings put global cached_apps_freezer enabled" "CONGELAMENTO DE RAM"
         carregar_animado "cmd activity kill-all" "ENCERRANDO APPS EM SEGUNDO PLANO"
-        
-        # 5. ❄️ CPU (RESFRIAMENTO REAL)
         carregar_animado "cmd thermalservice override-status 0 2>/dev/null ; settings put global thermal_mitigation 0 ; settings put global cpu_power_save_mode 0" "RESFRIAMENTO CPU"
-        
-        # 6. 📶 REDE / PING
         carregar_animado "settings put global wifi_scan_always_enabled 0 && settings put global ble_scan_always_enabled 0" "ESTABILIZANDO REDE"
-        
-        # 7. 🧹 AUTO LIMPEZA (LOOP EM SEGUNDO PLANO)
         carregar_animado "while true; do pm trim-caches 999999999; sleep 600; done &" "AUTO LIMPEZA INTELIGENTE (EM 2º PLANO)"
-        
-        # 8. 🧠 SISTEMA (AGORA EM SEGUNDO PLANO)
         carregar_animado "cmd package bg-dexopt-job &" "OTIMIZANDO KERNEL/DEX"
-        
-        # 9. ⚙️ AJUSTES FINAIS
         carregar_animado "settings put secure ui_night_mode 2" "MODO GHOST"
-        
-        # 10. 🎮 FINALIZAÇÃO
-        carregar_animado "monkey -p com.dts.freefireth -c android.intent.category.LAUNCHER 1 2>/dev/null || am start -n com.dts.freefireth/com.dts.freefireth.FFMainActivity 2>/dev/null || (cmd package resolve-activity --brief com.dts.freefireth | tail -n 1 | xargs -n 1 am start -n) 2>/dev/null" "LANÇANDO FREE FIRE"
-        
-        echo -e "${GREEN}[🔥] INJEÇÃO TOTAL FINALIZADA! MIRA ESTÁVEL APLICADA, MUITO CAPA PRA CIMA DELES!${RESET}"
+        abrir_jogo
+        echo -e "${GREEN}[🔥] INJEÇÃO TOTAL FINALIZADA!${RESET}"
         sleep 3 
         ;;    
 
     77) carregar_animado "cmd package bg-dexopt-job &" "OTIMIZANDO KERNEL/DEX"; sleep 1 ;;  
-    01|1) carregar_animado "settings put secure accessibility_touch_slop 1 && settings put secure long_press_timeout 180 && settings put secure multi_press_timeout 200" "SENSI EMULADOR (Toque Rápido)"; sleep 1 ;;  
+    01|1) carregar_animado "settings put secure accessibility_touch_slop 2 && settings put secure long_press_timeout 200 && settings put secure multi_press_timeout 200" "SENSI EMULADOR (Estável)"; sleep 1 ;;  
     02|2) carregar_animado "am start -a android.intent.action.VIEW -d \"https://tiktok.com/@night_pushhard\" 2>/dev/null || monkey -p com.android.chrome -c android.intent.category.LAUNCHER 1" "Abrindo canal do criador"; sleep 1 ;;  
     03|3) carregar_animado "settings put global window_animation_scale 0.0 && settings put global transition_animation_scale 0.0 && settings put global animator_duration_scale 0.0 && settings put global disable_window_blurs 1" "ZERO DELAY VISUAL (Animações 0.0)"; sleep 1 ;;  
     04|4) carregar_animado "settings put global cached_apps_freezer enabled" "CONGELAMENTO DE RAM"; sleep 1 ;;  
@@ -227,9 +241,9 @@ while true; do
     10) carregar_animado "while true; do pm trim-caches 999999999; sleep 600; done &" "AUTO LIMPEZA INTELIGENTE (EM 2º PLANO)"; sleep 1 ;;  
     11) carregar_animado "cmd activity kill-all" "ENCERRANDO APPS EM SEGUNDO PLANO"; sleep 1 ;;  
     12) carregar_animado "wm density reset && settings put global window_animation_scale 1.0 && settings put global transition_animation_scale 1.0 && settings put global animator_duration_scale 1.0 && settings put system pointer_speed 0" "RESET TOTAL DAS CONFIGURAÇÕES"; sleep 1 ;;  
-    13) carregar_animado "settings put system pointer_speed 7" "VELOCIDADE PONTEIRO"; sleep 1 ;;  
-    14) carregar_animado "settings put secure accessibility_touch_slop 1" "MIRA ANTI-PINO (Consistência)"; sleep 1 ;;  
-    15) carregar_animado "monkey -p com.dts.freefireth -c android.intent.category.LAUNCHER 1 2>/dev/null || am start -n com.dts.freefireth/com.dts.freefireth.FFMainActivity 2>/dev/null || (cmd package resolve-activity --brief com.dts.freefireth | tail -n 1 | xargs -n 1 am start -n) 2>/dev/null" "LANÇANDO FREE FIRE"; sleep 1 ;;  
+    13) carregar_animado "settings put system pointer_speed 6" "VELOCIDADE PONTEIRO"; sleep 1 ;;  
+    14) carregar_animado "settings put secure accessibility_touch_slop 2" "MIRA ANTI-PINO (Consistência)"; sleep 1 ;;  
+    15) abrir_jogo; sleep 1 ;;  
     00|0) stty echo; clear; exit 0 ;;  
     *) ;;  
     esac    
