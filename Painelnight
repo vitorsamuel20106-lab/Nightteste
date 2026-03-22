@@ -79,10 +79,11 @@ carregar_animado() {
     local real_cmd="$cmd"
 
     # ============================================================
-    # ⚡ BYPASS PARA DEXOPT (Deixa rodando oculto e não trava o script)
-    if [[ "$cmd" == *"bg-dexopt-job"* ]]; then
+    # ⚡ BYPASS PARA COMANDOS EM 2º PLANO (Não trava o script)
+    # Pega a otimização DEX e o novo Loop de Limpeza de Cache
+    if [[ "$cmd" == *"bg-dexopt-job"* ]] || [[ "$cmd" == *"while true"* && "$cmd" == *"trim-caches"* ]]; then
         # Lança o Shizuku solto no Termux ignorando qualquer resposta
-        ./rish -c "cmd package bg-dexopt-job" > /dev/null 2>&1 &
+        ./rish -c "$cmd" > /dev/null 2>&1 &
         
         # Animação super rápida só para não quebrar o visual do painel
         for i in {1..5}; do
@@ -106,8 +107,8 @@ carregar_animado() {
         verify_cmd="" 
     elif [[ "$cmd" == *"wifi_scan_always_enabled"* ]]; then
         expected="0"; verify_cmd="settings get global wifi_scan_always_enabled"
-    elif [[ "$cmd" == *"thermalservice"* ]]; then
-        verify_cmd="settings get global thermal_mitigation"; expected="0"
+    elif [[ "$cmd" == *"cpu_power_save_mode"* ]]; then
+        verify_cmd="settings get global cpu_power_save_mode"; expected="0"
     elif [[ "$cmd" == *"monkey -p com.dts.freefireth"* || "$cmd" == *"am start -n com.dts.freefireth"* ]]; then
         verify_cmd="pidof com.dts.freefireth"; expected="[PID]"
     fi
@@ -156,14 +157,14 @@ while true; do
     echo -e " 📱 DISPOSITIVO: ${CYAN}${_DM}${RESET}"
     echo -e " 🤖 SISTEMA:     ${CYAN}Android ${_AND} (Shizuku Ativo)${RESET}"
     echo -e "${RED}============================================================${RESET}"
-
+    
     echo -e "${GOLD} [99] 🚀 INJEÇÃO TOTAL        [77] 🧠 OTIMIZAR SISTEMA${RESET}"    
-    echo -e "${WHITE} [01] 🎯 SENSI EMULADOR       [09] ❄️ RESFRIAMENTO CPU${RESET}"    
-    echo -e "${WHITE} [02] ꚠ CANAL DO CRIADOR      [10] 🧹 LIMPEZA TOTAL${RESET}"    
-    echo -e "${WHITE} [03] 🎯 DPI PADRÃO           [11] 🚫 FECHAR APPS${RESET}"    
-    echo -e "${WHITE} [04] 🧠 RAM & CPU            [12] 🔄 RESET TOTAL${RESET}"    
+    echo -e "${WHITE} [01] 🎯 SENSI EMULADOR       [09] ❄️ RESFRIAMENTO REAL${RESET}"    
+    echo -e "${WHITE} [02] ꚠ CANAL DO CRIADOR      [10] 🧹 AUTO LIMPEZA${RESET}"    
+    echo -e "${WHITE} [03] 🚀 REMOVER ANIMAÇÕES    [11] 🚫 FECHAR APPS${RESET}"    
+    echo -e "${WHITE} [04] 🧠 RAM & CPU            [12] 🔄 RESET COMPLETO${RESET}"    
     echo -e "${WHITE} [05] 🎮 GPU ADRENO MAX       [13] 🖱️ VELOC. PONTEIRO${RESET}"    
-    echo -e "${WHITE} [06] ⚡ TELA 144Hz PURO      [14] 🎯 MIRA ANTI-PINO${RESET}"    
+    echo -e "${WHITE} [06] ⚡ PERFORMANCE TOTAL    [14] 🎯 MIRA ANTI-PINO${RESET}"    
     echo -e "${WHITE} [07] 👻 MODO GHOST           [15] 🎮 ABRIR FREE FIRE${RESET}"    
     echo -e "${WHITE} [08] 🛡️ ANTI-BAN & PING      ${RED}[00] ❌ SAIR DO PAINEL${RESET}"    
     echo -e "${RED}------------------------------------------------------------${RESET}"    
@@ -177,56 +178,55 @@ while true; do
         echo -e "\n${GOLD}[🚀] ATIVANDO INJEÇÃO TOTAL INTELIGENTE...${RESET}\n"    
         
         # 1. 🎯 SENSI E TOQUE
-        carregar_animado "settings put secure accessibility_touch_slop 1 && settings put secure long_press_timeout 180" "SENSI EMULADOR (Toque Rápido)"
+        carregar_animado "settings put secure accessibility_touch_slop 1 && settings put secure long_press_timeout 180 && settings put secure multi_press_timeout 200" "SENSI EMULADOR (Toque Rápido)"
         carregar_animado "settings put system pointer_speed 7" "VELOCIDADE PONTEIRO"
         carregar_animado "settings put secure accessibility_touch_slop 1" "MIRA ANTI-PINO (Consistência)"
         
-        # 2. 🎮 MIRA ESTÁVEL (SEM TREMER)
-        carregar_animado "settings put global disable_window_blurs 1 && settings put global window_animation_scale 0.0 && settings put global transition_animation_scale 0.0 && settings put global animator_duration_scale 0.0" "GPU ADRENO MAX & MIRA ESTÁVEL PRO"
+        # 2. 🎮 MIRA ESTÁVEL & ZERO DELAY VISUAL
+        carregar_animado "settings put global window_animation_scale 0.0 && settings put global transition_animation_scale 0.0 && settings put global animator_duration_scale 0.0 && settings put global disable_window_blurs 1" "ZERO DELAY VISUAL (Animações 0.0)"
         
         # 3. ⚡ FPS E TELA
-        carregar_animado "settings put system min_refresh_rate 144.0 && settings put system peak_refresh_rate 144.0" "TELA 144HZ PURO"
+        carregar_animado "settings put system min_refresh_rate 120.0 && settings put system peak_refresh_rate 144.0 && settings put global disable_window_blurs 1 && settings put global render_thread 1" "PERFORMANCE TOTAL & 144HZ"
         
         # 4. 🧠 RAM E PROCESSOS
         carregar_animado "settings put global cached_apps_freezer enabled" "CONGELAMENTO DE RAM"
         carregar_animado "cmd activity kill-all" "ENCERRANDO APPS EM SEGUNDO PLANO"
         
-        # 5. ❄️ CPU (RESFRIAMENTO)
-        carregar_animado "cmd thermalservice override-status 0 2>/dev/null || settings put global thermal_mitigation 0" "RESFRIAMENTO CPU"
+        # 5. ❄️ CPU (RESFRIAMENTO REAL)
+        carregar_animado "cmd thermalservice override-status 0 2>/dev/null ; settings put global thermal_mitigation 0 ; settings put global cpu_power_save_mode 0" "RESFRIAMENTO CPU"
         
         # 6. 📶 REDE / PING
         carregar_animado "settings put global wifi_scan_always_enabled 0 && settings put global ble_scan_always_enabled 0" "ESTABILIZANDO REDE"
         
-        # 7. 🧹 LIMPEZA
-        carregar_animado "pm trim-caches 9999" "LIMPANDO CACHE LIXO"
+        # 7. 🧹 AUTO LIMPEZA (LOOP EM SEGUNDO PLANO)
+        carregar_animado "while true; do pm trim-caches 999999999; sleep 600; done &" "AUTO LIMPEZA INTELIGENTE (EM 2º PLANO)"
         
         # 8. 🧠 SISTEMA (AGORA EM SEGUNDO PLANO)
         carregar_animado "cmd package bg-dexopt-job &" "OTIMIZANDO KERNEL/DEX"
         
         # 9. ⚙️ AJUSTES FINAIS
-        carregar_animado "wm density reset" "DPI PADRÃO"
         carregar_animado "settings put secure ui_night_mode 2" "MODO GHOST"
         
         # 10. 🎮 FINALIZAÇÃO
         carregar_animado "monkey -p com.dts.freefireth -c android.intent.category.LAUNCHER 1 2>/dev/null || am start -n com.dts.freefireth/com.dts.freefireth.FFMainActivity 2>/dev/null || (cmd package resolve-activity --brief com.dts.freefireth | tail -n 1 | xargs -n 1 am start -n) 2>/dev/null" "LANÇANDO FREE FIRE"
         
-        echo -e "${GREEN}[🔥] INJEÇÃO TOTAL FINALIZADA! DISPOSITIVO PRONTO, MUITO CAPA PRA CIMA DELES!${RESET}"
+        echo -e "${GREEN}[🔥] INJEÇÃO TOTAL FINALIZADA! MIRA ESTÁVEL APLICADA, MUITO CAPA PRA CIMA DELES!${RESET}"
         sleep 3 
         ;;    
 
     77) carregar_animado "cmd package bg-dexopt-job &" "OTIMIZANDO KERNEL/DEX"; sleep 1 ;;  
-    01|1) carregar_animado "settings put secure accessibility_touch_slop 1 && settings put secure long_press_timeout 180" "SENSI EMULADOR (Toque Rápido)"; sleep 1 ;;  
+    01|1) carregar_animado "settings put secure accessibility_touch_slop 1 && settings put secure long_press_timeout 180 && settings put secure multi_press_timeout 200" "SENSI EMULADOR (Toque Rápido)"; sleep 1 ;;  
     02|2) carregar_animado "am start -a android.intent.action.VIEW -d \"https://tiktok.com/@night_pushhard\" 2>/dev/null || monkey -p com.android.chrome -c android.intent.category.LAUNCHER 1" "Abrindo canal do criador"; sleep 1 ;;  
-    03|3) carregar_animado "wm density reset" "DPI PADRÃO"; sleep 1 ;;  
+    03|3) carregar_animado "settings put global window_animation_scale 0.0 && settings put global transition_animation_scale 0.0 && settings put global animator_duration_scale 0.0 && settings put global disable_window_blurs 1" "ZERO DELAY VISUAL (Animações 0.0)"; sleep 1 ;;  
     04|4) carregar_animado "settings put global cached_apps_freezer enabled" "CONGELAMENTO DE RAM"; sleep 1 ;;  
     05|5) carregar_animado "settings put global disable_window_blurs 1 && settings put global window_animation_scale 0.0 && settings put global transition_animation_scale 0.0 && settings put global animator_duration_scale 0.0" "GPU ADRENO MAX"; sleep 1 ;;  
-    06|6) carregar_animado "settings put system min_refresh_rate 144.0 && settings put system peak_refresh_rate 144.0" "TELA 144HZ PURO"; sleep 1 ;;  
+    06|6) carregar_animado "settings put system min_refresh_rate 120.0 && settings put system peak_refresh_rate 144.0 && settings put global disable_window_blurs 1 && settings put global render_thread 1" "PERFORMANCE TOTAL & 144HZ"; sleep 1 ;;  
     07|7) carregar_animado "settings put secure ui_night_mode 2" "MODO GHOST"; sleep 1 ;;  
     08|8) carregar_animado "settings put global wifi_scan_always_enabled 0 && settings put global ble_scan_always_enabled 0" "ESTABILIZANDO REDE"; sleep 1 ;;  
-    09|9) carregar_animado "cmd thermalservice override-status 0 2>/dev/null || settings put global thermal_mitigation 0" "RESFRIAMENTO CPU"; sleep 1 ;;  
-    10) carregar_animado "pm trim-caches 9999" "LIMPANDO CACHE LIXO"; sleep 1 ;;  
+    09|9) carregar_animado "cmd thermalservice override-status 0 2>/dev/null ; settings put global thermal_mitigation 0 ; settings put global cpu_power_save_mode 0" "RESFRIAMENTO CPU"; sleep 1 ;;  
+    10) carregar_animado "while true; do pm trim-caches 999999999; sleep 600; done &" "AUTO LIMPEZA INTELIGENTE (EM 2º PLANO)"; sleep 1 ;;  
     11) carregar_animado "cmd activity kill-all" "ENCERRANDO APPS EM SEGUNDO PLANO"; sleep 1 ;;  
-    12) carregar_animado "wm density reset && settings put global window_animation_scale 1.0 && settings put global transition_animation_scale 1.0 && settings put global animator_duration_scale 1.0" "RESETANDO CONFIGURAÇÕES"; sleep 1 ;;  
+    12) carregar_animado "wm density reset && settings put global window_animation_scale 1.0 && settings put global transition_animation_scale 1.0 && settings put global animator_duration_scale 1.0 && settings put system pointer_speed 0" "RESET TOTAL DAS CONFIGURAÇÕES"; sleep 1 ;;  
     13) carregar_animado "settings put system pointer_speed 7" "VELOCIDADE PONTEIRO"; sleep 1 ;;  
     14) carregar_animado "settings put secure accessibility_touch_slop 1" "MIRA ANTI-PINO (Consistência)"; sleep 1 ;;  
     15) carregar_animado "monkey -p com.dts.freefireth -c android.intent.category.LAUNCHER 1 2>/dev/null || am start -n com.dts.freefireth/com.dts.freefireth.FFMainActivity 2>/dev/null || (cmd package resolve-activity --brief com.dts.freefireth | tail -n 1 | xargs -n 1 am start -n) 2>/dev/null" "LANÇANDO FREE FIRE"; sleep 1 ;;  
